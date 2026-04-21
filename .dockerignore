@@ -1,0 +1,20 @@
+.git
+.gitignore
+.dockerignore
+.env
+
+venv/
+__pycache__/
+*.py[cod]
+
+# Local/debug-only files
+main1.py
+prac.py
+
+# Personal notes and large local documents
+*.docx
+
+# Local runtime/generated artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
