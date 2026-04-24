@@ -47,6 +47,7 @@ class ChatResponse(BaseModel):
     answer: str
     session_id: str
     sources: list[str]
+    ci_cd : dict
 
 
 # ---------------------------------------------------------
@@ -154,5 +155,6 @@ async def chat(req: ChatRequest):
     return {
         "answer": answer,
         "session_id": session_id,
-        "sources": sources
+        "sources": sources,
+        "ci_cd": {"version": "v3 deployed"}
     }
