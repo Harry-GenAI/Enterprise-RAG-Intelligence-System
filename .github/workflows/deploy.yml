@@ -21,8 +21,10 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/eris-version:latest .
-        docker tag ${{ secrets.DOCKER_USERNAME }}/eris-version:latest ${{ secrets.DOCKER_USERNAME }}/eris-version:${{ github.run_number }}
+        IMAGE=${{ secrets.DOCKER_USERNAME }}/eris-version:${{ github.run_number }}
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+        docker build -t $IMAGE -t ${{ secrets.DOCKER_USERNAME }}/eris-version:latest .
+        docker push $IMAGE
 
     - name: Push Docker Image
       run: |
@@ -36,18 +38,18 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          IMAGE=${{ secrets.DOCKER_USERNAME }}/eris-version:latest
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/eris-version:${{ github.run_number }}
 
           echo "Pulling latest image..."
           docker pull $IMAGE
 
           echo "Stopping old container..."
-          docker stop eris || true
-          docker rm eris || true
+          docker stop eris-container || true
+          docker rm eris-container || true
 
           echo "Running new container..."
           docker run -d \
-            --name eris \
+            --name eris-container \
             --env-file .env \
             -p 8000:8000 \
             $IMAGE
