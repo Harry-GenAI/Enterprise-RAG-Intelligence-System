@@ -158,3 +158,5 @@ async def chat(req: ChatRequest):
         "sources": sources,
         "ci_cd": {"version": "v3 deployed"}
     }
+
+    print("CI/CD deployed successfully...")
