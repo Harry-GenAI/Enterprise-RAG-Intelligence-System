@@ -152,11 +152,13 @@ async def chat(req: ChatRequest):
     logger.info(f"Response completed | session={session_id}")
     logger.info(f"context:{context}")
 
+    print("CI/CD deployed successfully...")
+
     return {
         "answer": answer,
         "session_id": session_id,
         "sources": sources,
-        "ci_cd": {"version": "v3 deployed"}
+        "ci_cd": {"version": "v4 deployed"}
     }
 
-    print("CI/CD deployed successfully...")
+    
