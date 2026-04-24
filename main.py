@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import uuid
 import asyncio
 import os
+import uvicorn
 
 from logger import logger
 from db import create_table, save_chat, get_chat_history
@@ -37,8 +38,7 @@ app = FastAPI()
 # REQUEST / RESPONSE SCHEMAS
 # ---------------------------------------------------------
 class ChatRequest(BaseModel):
-    message: str | None = None
-    query: str | None = None      # accepts older clients that still send "query"
+    query: str | None = None      
     session_id: str | None = None
     domain: str | None = None   # metadata filter support
 
@@ -66,13 +66,15 @@ async def chat(req: ChatRequest):
 
     # create or reuse session
     session_id = req.session_id or str(uuid.uuid4())
-    user_message = req.message or req.query
+    user_message = req.query
 
     if not user_message or not user_message.strip():
         raise HTTPException(
             status_code=400,
-            detail="Please send either 'message' or 'query' in the request body."
+            detail="Please send 'query' in the request body."
         )
+
+    user_message = user_message.strip()
 
     logger.info(f"New chat request | session={session_id}")
 
@@ -103,6 +105,7 @@ async def chat(req: ChatRequest):
         history,
         user_message
     )
+    logger.info(f"Retrieval query: {rewritten_query}")
 
     # -----------------------------------------------------
     # Metadata filter (domain routing)
@@ -111,8 +114,9 @@ async def chat(req: ChatRequest):
 
     if req.domain:
         metadata_filter = {
-            "doc_type": req.domain
+            "doc_type": req.domain.strip()
         }
+        logger.info(f"Metadata filter: {metadata_filter}")
 
     # -----------------------------------------------------
     # Retrieve context from FAISS (non-blocking)
@@ -134,7 +138,7 @@ async def chat(req: ChatRequest):
 
     # -----------------------------------------------------
     # Generate the final user answer.
-    # Bedrock calls are blocking, so run them in a worker thread
+    # Bedrock calls are blocking, so running them in a worker thread
     # to keep FastAPI responsive when served by uvicorn.
     # -----------------------------------------------------
     answer = await asyncio.to_thread(call_llm, prompt, "answer")
@@ -145,6 +149,7 @@ async def chat(req: ChatRequest):
     save_chat(session_id, user_message, answer)
 
     logger.info(f"Response completed | session={session_id}")
+    logger.info(f"context:{context}")
 
     return {
         "answer": answer,

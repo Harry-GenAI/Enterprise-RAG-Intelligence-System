@@ -1,22 +1,5 @@
 PROMPT_VERSION = "enterprise_v2_inference"
 
-'''def build_rephrase_prompt(history, question):
-    """
-    This prompt takes the chat history and the latest user question
-    and turns it into a standalone question. 
-    Essential for follow-ups like 'Where was HE born?'
-    """
-    return f"""
-    Given the following conversation history and a follow-up question, 
-    rephrase the follow-up question to be a standalone question that can be 
-    understood without the history.
-
-    Chat History:
-    {history}
-
-    Follow-up Question: {question}
-    Standalone Question:"""
-'''
 def build_prompt(history, context, question):
     """
     Main QA prompt. Updated to allow for policy inference while 

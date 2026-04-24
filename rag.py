@@ -5,6 +5,7 @@ from langchain_community.vectorstores import FAISS
 from sentence_transformers import CrossEncoder
 import os
 from dotenv import load_dotenv
+import asyncio
 
 # ----------------------------
 # Load ENV (LangSmith etc)
@@ -77,6 +78,7 @@ def compress_context(query, docs):
     #lets take top 5 sentences with threshold score as more than 0.3 only
     threshold_score = 0.3
     top_sentences = [s for s in ranked if s[1]>threshold_score][:5]
+    logger.info(f"after sentence-compression, {len(top_sentences)} sentences selected.")
 
     context = ""
     sources = []
@@ -138,7 +140,7 @@ def retrieve_context(query: str, metadata_filter: dict | None = None):
     # take top 3 best chunks
     top_docs = [doc for doc, score in reranked][:3]
 
-    logger.info("Reranking applied -> top 3 selected")
+    logger.info(f"Reranking applied -> top {len(top_docs)} chunks selected")
 
     # ----------------------------
     # 🔥 Step-6: COMPRESSION
